@@ -1,5 +1,4 @@
 import express from 'express';
-import { createServer as createViteServer } from 'vite';
 import { createClient } from '@supabase/supabase-js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -122,7 +121,6 @@ app.get('/api/collections', async (req, res) => {
   }
 });
 
-// Add more API routes following the same safe pattern...
 app.get('/api/collections/:id', async (req, res) => {
   if (!supabase) return res.status(500).json({ error: 'Database not configured' });
   const { data, error } = await supabase.from('collections').select('*').eq('id', req.params.id).single();
@@ -193,21 +191,26 @@ if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV) {
   });
 }
 
-// Local Dev: Vite integration
+// Local Dev: Vite integration (Dynamic import to avoid production overhead/errors)
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL_ENV) {
   const setupVite = async () => {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
+    try {
+      const { createServer: createViteServer } = await import('vite');
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+      });
+      app.use(vite.middlewares);
 
-    const PORT = Number(process.env.PORT) || 3000;
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`Dev server running on http://localhost:${PORT}`);
-    });
+      const PORT = Number(process.env.PORT) || 3000;
+      app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Dev server running on http://localhost:${PORT}`);
+      });
+    } catch (err) {
+      console.error('Vite Start Error:', err);
+    }
   };
-  setupVite().catch(console.error);
+  setupVite();
 }
 
 // Export for Vercel

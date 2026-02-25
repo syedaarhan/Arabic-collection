@@ -32,7 +32,17 @@ function AdminLogin({ setToken }: { setToken: (t: string) => void }) {
       }
     } catch (err) {
       console.error('Login Fetch Error:', err);
-      setError('Connection failed. Please ensure the server is responding.');
+      // Background diagnostic check
+      try {
+        const healthRes = await fetch('/api/health');
+        if (healthRes.ok) {
+          setError('Server is active but login is blocked. Check Supabase keys.');
+        } else {
+          setError('API server is offline (Status: ' + healthRes.status + ').');
+        }
+      } catch (diagErr) {
+        setError('Network error: Server is not responding. Check your connection.');
+      }
     } finally {
       setLoading(false);
     }

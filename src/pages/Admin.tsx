@@ -166,22 +166,27 @@ function SidebarLink({ to, icon, label }: { to: string; icon: React.ReactNode; l
 
 function ManageCollections({ token }: { token: string }) {
   const [collections, setCollections] = useState([]);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const fetchCollections = () => {
+    setLoading(true);
     fetch('/api/collections')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
           setCollections(data);
+          setError('');
         } else {
-          console.error('Failed to fetch collections:', data.error);
+          setError(data.error || 'Failed to load collections');
           setCollections([]);
         }
       })
       .catch(err => {
-        console.error('Fetch error:', err);
+        setError('Network error: Could not reach the server');
         setCollections([]);
-      });
+      })
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => { fetchCollections(); }, []);
@@ -209,32 +214,44 @@ function ManageCollections({ token }: { token: string }) {
       </div>
 
       <div className="grid grid-cols-1 gap-3">
-        {collections.map((item: any) => (
-          <div key={item.id} className="glass-card p-4 flex items-center gap-5 group hover:border-brand-gold/30 transition-colors">
-            <div className="w-16 h-16 overflow-hidden shrink-0 border border-black/8">
-              <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-            </div>
-            <div className="flex-grow">
-              <div className="flex items-center gap-3 mb-1">
-                <h3 className="text-brand-ink font-medium text-sm">{item.title}</h3>
-                {item.featured ? <span className="text-[8px] bg-brand-gold/10 text-brand-gold px-2 py-0.5 rounded-full uppercase tracking-widest border border-brand-gold/20">Featured</span> : null}
-              </div>
-              <p className="text-[10px] text-brand-muted/60 uppercase tracking-widest">{item.category}</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link to={`/admin/edit-collection/${item.id}`} className="w-9 h-9 flex items-center justify-center border border-black/8 text-brand-muted/50 hover:text-brand-gold hover:border-brand-gold/40 transition-all rounded-sm">
-                <Edit size={15} />
-              </Link>
-              <button onClick={() => handleDelete(item.id)} className="w-9 h-9 flex items-center justify-center border border-black/8 text-brand-muted/50 hover:text-red-500 hover:border-red-300 transition-all rounded-sm">
-                <Trash2 size={15} />
-              </button>
-            </div>
+        {loading ? (
+          <div className="glass-card p-20 flex flex-col items-center justify-center gap-4">
+            <div className="w-6 h-6 border-2 border-brand-gold/30 border-t-brand-gold rounded-full animate-spin" />
+            <span className="text-[10px] uppercase tracking-widest text-brand-muted/40">Opening Vault...</span>
           </div>
-        ))}
-        {collections.length === 0 && (
+        ) : error ? (
+          <div className="glass-card p-20 text-center border-red-100 bg-red-50/30">
+            <p className="text-red-500 text-xs font-medium mb-2">Synchronization Error</p>
+            <p className="text-[10px] text-red-400 uppercase tracking-widest leading-relaxed max-w-xs mx-auto">{error}</p>
+            <button onClick={fetchCollections} className="mt-6 text-[9px] uppercase tracking-widest text-brand-gold hover:text-brand-ink transition-colors">Try Reconnecting</button>
+          </div>
+        ) : collections.length === 0 ? (
           <div className="glass-card p-20 text-center text-brand-muted/40 uppercase tracking-[0.2em] text-xs">
             No items in collection
           </div>
+        ) : (
+          collections.map((item: any) => (
+            <div key={item.id} className="glass-card p-4 flex items-center gap-5 group hover:border-brand-gold/30 transition-colors">
+              <div className="w-16 h-16 overflow-hidden shrink-0 border border-black/8">
+                <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              </div>
+              <div className="flex-grow">
+                <div className="flex items-center gap-3 mb-1">
+                  <h3 className="text-brand-ink font-medium text-sm">{item.title}</h3>
+                  {item.featured ? <span className="text-[8px] bg-brand-gold/10 text-brand-gold px-2 py-0.5 rounded-full uppercase tracking-widest border border-brand-gold/20">Featured</span> : null}
+                </div>
+                <p className="text-[10px] text-brand-muted/60 uppercase tracking-widest">{item.category}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Link to={`/admin/edit-collection/${item.id}`} className="w-9 h-9 flex items-center justify-center border border-black/8 text-brand-muted/50 hover:text-brand-gold hover:border-brand-gold/40 transition-all rounded-sm">
+                  <Edit size={15} />
+                </Link>
+                <button onClick={() => handleDelete(item.id)} className="w-9 h-9 flex items-center justify-center border border-black/8 text-brand-muted/50 hover:text-red-500 hover:border-red-300 transition-all rounded-sm">
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            </div>
+          ))
         )}
       </div>
     </motion.div>

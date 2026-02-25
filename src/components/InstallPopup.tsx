@@ -20,23 +20,29 @@ export default function InstallPopup() {
         const handler = (e: any) => {
             e.preventDefault();
             setDeferredPrompt(e);
+            console.log('beforeinstallprompt fired');
             // Show popup after a short delay
             setTimeout(() => setShow(true), 3000);
         };
 
         window.addEventListener('beforeinstallprompt', handler);
 
-        // Handle iOS/Safari Manual Guidance (Show once if not standalone)
+        // Fallback: If not standalone and after 6 seconds, show guidance if event didn't fire
         const isStandalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
-        if (isIOS && !isStandalone) {
-            setTimeout(() => setShow(true), 4000);
+        if (!isStandalone) {
+            setTimeout(() => {
+                if (!isStandalone) setShow(true);
+            }, 6000);
         }
 
         return () => window.removeEventListener('beforeinstallprompt', handler);
     }, []);
 
     const handleInstall = async () => {
-        if (!deferredPrompt) return;
+        if (!deferredPrompt) {
+            alert("To install: Open your browser menu (⋮) and select 'Install app' or 'Add to Home screen'.");
+            return;
+        }
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === 'accepted') setShow(false);
@@ -63,18 +69,20 @@ export default function InstallPopup() {
 
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-xl bg-brand-ink p-2 border border-brand-gold/30 shrink-0">
-                            <img src="/assets/logo.png" alt="App Icon" className="w-full h-full object-contain" />
+                            <img src="/icon-192.png" alt="App Icon" className="w-full h-full object-contain" />
                         </div>
                         <div>
                             <h3 className="text-sm font-serif font-medium text-brand-ink">Arabic Collection</h3>
-                            <p className="text-[10px] text-brand-muted uppercase tracking-widest">Install Mobile App</p>
+                            <p className="text-[10px] text-brand-muted uppercase tracking-widest">Mobile Boutiqe</p>
                         </div>
                     </div>
 
                     <p className="text-[11px] text-brand-ink/70 leading-relaxed">
                         {platform === 'ios'
                             ? "Experience the full luxury. Tap the Share button and select 'Add to Home Screen' to install."
-                            : "Install our boutique app for a faster, immersive browsing experience."}
+                            : !deferredPrompt
+                                ? "Experience our full boutique. Open your browser menu and select 'Install app' to add to home screen."
+                                : "Install our boutique app for a faster, immersive browsing experience."}
                     </p>
 
                     {platform === 'ios' ? (

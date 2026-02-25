@@ -312,7 +312,13 @@ function EditCollection({ token }: { token: string }) {
   useEffect(() => {
     fetch(`/api/collections/${id}`)
       .then(res => res.json())
-      .then(data => setFormData({ title: data.title, description: data.description, category: data.category, image: data.image, featured: data.featured === 1 }));
+      .then(data => setFormData({
+        title: data.title,
+        description: data.description,
+        category: data.category,
+        image: data.image,
+        featured: !!data.featured
+      }));
   }, [id]);
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -133,10 +133,20 @@ app.post('/api/add-collection', verifyAdmin, async (req, res) => {
   const { title, description, category, image, featured } = req.body;
 
   try {
-    const { data, error } = await supabase.from('collections').insert([{
-      title, description, category, image, featured: !!featured,
-      availabilityStatus: req.body.availabilityStatus || 'Available In Store Only'
-    }]).select();
+    const payload: any = {
+      title,
+      description,
+      category,
+      image,
+      featured: !!featured
+    };
+
+    // Only include availabilityStatus if it's explicitly provided
+    if (req.body.availabilityStatus) {
+      payload.availabilityStatus = req.body.availabilityStatus;
+    }
+
+    const { data, error } = await supabase.from('collections').insert([payload]).select();
 
     if (error) {
       console.error('Insert error:', error.message);
@@ -156,14 +166,36 @@ app.post('/api/add-collection', verifyAdmin, async (req, res) => {
 
 app.put('/api/update-collection/:id', verifyAdmin, async (req, res) => {
   if (!supabase) return res.status(500).json({ error: 'Database not configured' });
-  const { title, description, category, image, featured } = req.body;
-  const { error } = await supabase.from('collections').update({
-    title, description, category, image, featured: !!featured,
-    availabilityStatus: req.body.availabilityStatus
-  }).eq('id', req.params.id);
+  const { title, description, category, image, featured, availabilityStatus } = req.body;
 
-  if (error) return res.status(500).json({ error: error.message });
-  res.json({ success: true });
+  try {
+    const payload: any = {
+      title,
+      description,
+      category,
+      image,
+      featured: !!featured
+    };
+
+    if (availabilityStatus) {
+      payload.availabilityStatus = availabilityStatus;
+    }
+
+    const { error } = await supabase
+      .from('collections')
+      .update(payload)
+      .eq('id', req.params.id);
+
+    if (error) {
+      console.error('Update error:', error.message);
+      return res.status(500).json({ error: error.message });
+    }
+
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error('Critical Update Collection Error:', err);
+    res.status(500).json({ error: 'Server error during item update.' });
+  }
 });
 
 app.delete('/api/collection/:id', verifyAdmin, async (req, res) => {

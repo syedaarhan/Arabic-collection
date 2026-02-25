@@ -13,7 +13,6 @@ import ProductDetail from './pages/ProductDetail';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Admin from './pages/Admin';
-import InstallPopup from './components/InstallPopup';
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -49,7 +48,6 @@ export default function App() {
           <AnimatedRoutes />
         </main>
         <Footer />
-        <InstallPopup />
       </div>
     </Router>
   );

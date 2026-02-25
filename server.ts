@@ -131,13 +131,27 @@ app.get('/api/collections/:id', async (req, res) => {
 app.post('/api/add-collection', verifyAdmin, async (req, res) => {
   if (!supabase) return res.status(500).json({ error: 'Database not configured' });
   const { title, description, category, image, featured } = req.body;
-  const { data, error } = await supabase.from('collections').insert([{
-    title, description, category, image, featured: !!featured,
-    availabilityStatus: req.body.availabilityStatus || 'Available In Store Only'
-  }]).select();
 
-  if (error) return res.status(500).json({ error: error.message });
-  res.json({ id: data[0].id, success: true });
+  try {
+    const { data, error } = await supabase.from('collections').insert([{
+      title, description, category, image, featured: !!featured,
+      availabilityStatus: req.body.availabilityStatus || 'Available In Store Only'
+    }]).select();
+
+    if (error) {
+      console.error('Insert error:', error.message);
+      return res.status(500).json({ error: error.message });
+    }
+
+    if (!data || data.length === 0) {
+      return res.status(500).json({ error: 'Failed to create item. No data returned from database.' });
+    }
+
+    res.json({ id: data[0].id, success: true });
+  } catch (err: any) {
+    console.error('Critical Add Collection Error:', err);
+    res.status(500).json({ error: 'Server error during item creation.' });
+  }
 });
 
 app.put('/api/update-collection/:id', verifyAdmin, async (req, res) => {
@@ -170,9 +184,24 @@ app.get('/api/gallery', async (req, res) => {
 app.post('/api/upload-gallery', verifyAdmin, async (req, res) => {
   if (!supabase) return res.status(500).json({ error: 'Database not configured' });
   const { image } = req.body;
-  const { data, error } = await supabase.from('gallery').insert([{ image }]).select();
-  if (error) return res.status(500).json({ error: error.message });
-  res.json({ id: data[0].id, success: true });
+
+  try {
+    const { data, error } = await supabase.from('gallery').insert([{ image }]).select();
+
+    if (error) {
+      console.error('Gallery upload error:', error.message);
+      return res.status(500).json({ error: error.message });
+    }
+
+    if (!data || data.length === 0) {
+      return res.status(500).json({ error: 'Failed to upload image to gallery.' });
+    }
+
+    res.json({ id: data[0].id, success: true });
+  } catch (err: any) {
+    console.error('Critical Gallery Upload Error:', err);
+    res.status(500).json({ error: 'Server error during gallery upload.' });
+  }
 });
 
 app.delete('/api/gallery/:id', verifyAdmin, async (req, res) => {

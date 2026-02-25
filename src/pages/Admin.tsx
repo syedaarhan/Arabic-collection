@@ -247,16 +247,22 @@ function ItemForm({
   onSubmit,
   onCancel,
   title,
+  loading = false,
 }: {
   formData: any;
   setFormData: (d: any) => void;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
   title: string;
+  loading?: boolean;
 }) {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        alert('Image is too large. Please select an image smaller than 10MB.');
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => setFormData({ ...formData, image: reader.result as string });
       reader.readAsDataURL(file);
@@ -310,9 +316,16 @@ function ItemForm({
       </div>
 
       <div className="pt-4 border-t border-black/6 flex justify-end gap-5">
-        <button type="button" onClick={onCancel} className="text-[10px] uppercase tracking-widest text-brand-muted/60 hover:text-brand-ink transition-colors">Cancel</button>
-        <button type="submit" className="bg-brand-ink text-white px-9 py-3.5 text-[10px] uppercase tracking-widest hover:bg-brand-gold transition-all rounded-sm flex items-center gap-2">
-          <Save size={13} /> Save
+        <button type="button" disabled={loading} onClick={onCancel} className="text-[10px] uppercase tracking-widest text-brand-muted/60 hover:text-brand-ink transition-colors disabled:opacity-50">Cancel</button>
+        <button
+          type="submit"
+          disabled={loading}
+          className={`bg-brand-ink text-white px-9 py-3.5 text-[10px] uppercase tracking-widest hover:bg-brand-gold transition-all rounded-sm flex items-center gap-2 ${loading ? 'opacity-70 cursor-wait' : ''}`}
+        >
+          {loading ? (
+            <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : <Save size={13} />}
+          {loading ? 'Storing...' : 'Save'}
         </button>
       </div>
     </form>
@@ -322,15 +335,35 @@ function ItemForm({
 function AddCollection({ token }: { token: string }) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ title: '', description: '', category: 'Clothes', image: '', featured: false });
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await fetch('/api/add-collection', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(formData),
-    });
-    navigate('/admin');
+    if (!formData.image) {
+      alert('Please upload an image first.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch('/api/add-collection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await res.json();
+
+      if (res.ok) {
+        navigate('/admin');
+      } else {
+        alert(`Error: ${result.error || 'Failed to save artifact'}`);
+      }
+    } catch (err) {
+      alert('Submission failed. Check your internet connection or the server status.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -342,7 +375,7 @@ function AddCollection({ token }: { token: string }) {
           <div className="w-10 h-px bg-brand-gold/40 mt-2" />
         </div>
       </div>
-      <ItemForm formData={formData} setFormData={setFormData} onSubmit={handleSubmit} onCancel={() => navigate('/admin')} title="New Artifact" />
+      <ItemForm formData={formData} setFormData={setFormData} onSubmit={handleSubmit} onCancel={() => navigate('/admin')} title="New Artifact" loading={loading} />
     </motion.div>
   );
 }
@@ -351,6 +384,7 @@ function EditCollection({ token }: { token: string }) {
   const navigate = useNavigate();
   const { id } = useParams();
   const [formData, setFormData] = useState({ title: '', description: '', category: 'Clothes', image: '', featured: false });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetch(`/api/collections/${id}`)
@@ -366,12 +400,26 @@ function EditCollection({ token }: { token: string }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await fetch(`/api/update-collection/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(formData),
-    });
-    navigate('/admin');
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/update-collection/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await res.json();
+
+      if (res.ok) {
+        navigate('/admin');
+      } else {
+        alert(`Error: ${result.error || 'Failed to update artifact'}`);
+      }
+    } catch (err) {
+      alert('Update failed. Check your connection.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -383,7 +431,7 @@ function EditCollection({ token }: { token: string }) {
           <div className="w-10 h-px bg-brand-gold/40 mt-2" />
         </div>
       </div>
-      <ItemForm formData={formData} setFormData={setFormData} onSubmit={handleSubmit} onCancel={() => navigate('/admin')} title="Edit Artifact" />
+      <ItemForm formData={formData} setFormData={setFormData} onSubmit={handleSubmit} onCancel={() => navigate('/admin')} title="Edit Artifact" loading={loading} />
     </motion.div>
   );
 }

@@ -15,7 +15,7 @@ function AdminLogin({ setToken }: { setToken: (t: string) => void }) {
     setError('');
 
     try {
-      const res = await fetch('/api/admin/login', {
+      const res = await fetch(`/api/admin/login?t=${Date.now()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
@@ -171,7 +171,7 @@ function ManageCollections({ token }: { token: string }) {
 
   const fetchCollections = () => {
     setLoading(true);
-    fetch('/api/collections')
+    fetch(`/api/collections?t=${Date.now()}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -276,8 +276,8 @@ function ItemForm({
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        alert('Image is too large. Please select an image smaller than 10MB.');
+      if (file.size > 4 * 1024 * 1024) {
+        alert('Image is too large. Vercel limits uploads to 4MB. Please select a smaller image or compress it.');
         return;
       }
       const reader = new FileReader();
@@ -404,7 +404,7 @@ function EditCollection({ token }: { token: string }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/collections/${id}`)
+    fetch(`/api/collections/${id}?t=${Date.now()}`)
       .then(res => res.json())
       .then(data => setFormData({
         title: data.title,
@@ -457,7 +457,7 @@ function ManageGallery({ token }: { token: string }) {
   const [images, setImages] = useState([]);
 
   const fetchGallery = () => {
-    fetch('/api/gallery')
+    fetch(`/api/gallery?t=${Date.now()}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {

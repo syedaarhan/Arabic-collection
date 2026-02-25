@@ -15,6 +15,23 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(express.json({ limit: '50mb' }));
 
+// Forced Cache-Busting for API
+app.use('/api', (req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
+  next();
+});
+
+// Simple request logger for debugging Vercel
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    console.log(`[API Request] ${req.method} ${req.path}`);
+  }
+  next();
+});
+
 // Supabase Configuration
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';

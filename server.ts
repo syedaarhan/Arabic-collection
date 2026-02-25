@@ -200,14 +200,24 @@ async function startServer() {
     }
   };
 
-  // Only attempt seeding if Supabase is configured
+  // Seeding if Supabase is configured
   if (supabaseUrl && supabaseKey) {
     setupInitialAdmin().catch(err => console.error('Error seeding admin:', err));
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
+  // Export app for Vercel, but also listen for local dev
+  if (process.env.NODE_ENV !== 'production' || process.env.VERCEL_ENV) {
+    // On Vercel, this usually isn't called, but Export is used.
+    // Locally, we still need to listen.
+    if (!process.env.VERCEL_ENV) {
+      app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+      });
+    }
+  }
+
+  return app;
 }
 
-startServer();
+const appPromise = startServer();
+export default appPromise;

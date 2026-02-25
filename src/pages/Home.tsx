@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'motion/react';
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
+import clothesImg from '../assets/clothes.png';
+import watchesImg from '../assets/watches.jpg';
+import perfumesImg from '../assets/perfume.jpg';
 
 const FeaturedArtifacts = () => {
   const [products, setProducts] = useState([]);
@@ -331,9 +334,9 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { name: 'Clothes', img: '1549439602-43ebca23d7af', desc: 'Traditional & Contemporary Wear' },
-              { name: 'Watches', img: '1524592094714-0f0654e359f3', desc: 'Rare Timepieces' },
-              { name: 'Perfumes', img: '1541643600914-78b084683601', desc: 'Exotic Arabian Scents' },
+              { name: 'Clothes', img: clothesImg, desc: 'Traditional & Contemporary Wear' },
+              { name: 'Watches', img: watchesImg, desc: 'Rare Timepieces' },
+              { name: 'Perfumes', img: perfumesImg, desc: 'Exotic Arabian Scents' },
             ].map(({ name, img, desc }, i) => (
               <motion.div
                 key={name}
@@ -347,7 +350,7 @@ export default function Home() {
                   className="group relative h-[480px] overflow-hidden block shadow-luxury transition-transform duration-500 hover:-translate-y-2"
                 >
                   <img
-                    src={`https://images.unsplash.com/photo-${img}?auto=format&fit=crop&q=75&w=900`}
+                    src={img}
                     alt={name}
                     loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-700 scale-105 group-hover:scale-100"
@@ -356,8 +359,8 @@ export default function Home() {
                   <div className="absolute inset-0 p-8 flex flex-col justify-end">
                     <p className="text-white/55 text-[8px] uppercase tracking-[0.4em] mb-1.5 font-medium">{desc}</p>
                     <h3 className="text-white text-3xl font-serif font-light tracking-tight mb-2.5">{name}</h3>
-                    <div className="overflow-hidden h-4">
-                      <span className="text-brand-gold-light text-[8px] uppercase tracking-[0.4em] block translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                    <div className="overflow-hidden">
+                      <span className="text-brand-gold-light text-[8px] uppercase tracking-[0.4em] block translate-y-full group-hover:translate-y-0 transition-all duration-700 ease-out opacity-0 group-hover:opacity-100">
                         View Archive →
                       </span>
                     </div>

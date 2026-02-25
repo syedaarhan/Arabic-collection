@@ -192,11 +192,23 @@ async function startServer() {
 
   // Initial Admin Setup (Seeding if table is empty)
   const setupInitialAdmin = async () => {
-    const { data: admins } = await supabase.from('admin').select('id').limit(1);
+    const { data: admins, error: selectError } = await supabase.from('admin').select('id').limit(1);
+
+    if (selectError) {
+      console.error('Error checking admin table:', selectError.message);
+      return;
+    }
+
     if (!admins || admins.length === 0) {
       console.log('Seeding initial admin...');
       const hashedPassword = bcrypt.hashSync('Arabic', 10);
-      await supabase.from('admin').insert([{ username: 'Arabic', password: hashedPassword }]);
+      const { error: insertError } = await supabase.from('admin').insert([{ username: 'Arabic', password: hashedPassword }]);
+
+      if (insertError) {
+        console.error('Error seeding admin:', insertError.message);
+      } else {
+        console.log('Seeding successful.');
+      }
     }
   };
 

@@ -26,7 +26,18 @@ export default function Collections() {
       : `/api/collections?category=${activeCategory}`;
     fetch(url)
       .then((res) => res.json())
-      .then((data) => setCollections(data));
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setCollections(data);
+        } else {
+          console.error('Failed to fetch collections:', data.error);
+          setCollections([]);
+        }
+      })
+      .catch((err) => {
+        console.error('Fetch error:', err);
+        setCollections([]);
+      });
   }, [activeCategory]);
 
   const filteredCollections = collections.filter((item: any) => {

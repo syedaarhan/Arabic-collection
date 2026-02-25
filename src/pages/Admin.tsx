@@ -138,7 +138,20 @@ function ManageCollections({ token }: { token: string }) {
   const [collections, setCollections] = useState([]);
 
   const fetchCollections = () => {
-    fetch('/api/collections').then(res => res.json()).then(data => setCollections(data));
+    fetch('/api/collections')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setCollections(data);
+        } else {
+          console.error('Failed to fetch collections:', data.error);
+          setCollections([]);
+        }
+      })
+      .catch(err => {
+        console.error('Fetch error:', err);
+        setCollections([]);
+      });
   };
 
   useEffect(() => { fetchCollections(); }, []);
@@ -349,7 +362,20 @@ function ManageGallery({ token }: { token: string }) {
   const [images, setImages] = useState([]);
 
   const fetchGallery = () => {
-    fetch('/api/gallery').then(res => res.json()).then(data => setImages(data));
+    fetch('/api/gallery')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setImages(data);
+        } else {
+          console.error('Failed to fetch gallery:', data.error);
+          setImages([]);
+        }
+      })
+      .catch(err => {
+        console.error('Fetch error:', err);
+        setImages([]);
+      });
   };
 
   useEffect(() => { fetchGallery(); }, []);

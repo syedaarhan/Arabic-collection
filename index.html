@@ -24,6 +24,15 @@
 
   <link rel="icon" type="image/png" href="/assets/logo.png" sizes="32x32" />
   <link rel="apple-touch-icon" href="/assets/logo.png" />
+  <link rel="manifest" href="/manifest.json" />
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed:', err));
+      });
+    }
+  </script>
 </head>
 
 <body>

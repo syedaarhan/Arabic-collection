@@ -50,7 +50,6 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-7">
             <NavLink to="/">Home</NavLink>
             <NavLink to="/collections">Collections</NavLink>
-            <NavLink to="/gallery">Gallery</NavLink>
             <NavLink to="/about">About</NavLink>
             <NavLink to="/contact">Contact</NavLink>
           </div>
@@ -77,7 +76,6 @@ export default function Navbar() {
             <div className="px-6 py-5 flex flex-col gap-1">
               <MobileNavLink to="/">Home</MobileNavLink>
               <MobileNavLink to="/collections">Collections</MobileNavLink>
-              <MobileNavLink to="/gallery">Gallery</MobileNavLink>
               <MobileNavLink to="/about">About</MobileNavLink>
               <MobileNavLink to="/contact">Contact</MobileNavLink>
             </div>

@@ -126,11 +126,11 @@ app.get('/api/collections', async (req, res) => {
   const { category, featured } = req.query;
 
   try {
-    let query = supabase.from('collections').select('id, title, description, category, image, featured, createdAt');
+    let query = supabase.from('collections').select('id, title, description, category, image, featured');
     if (category && category !== 'All') query = query.eq('category', category);
     if (featured === 'true') query = query.eq('featured', true);
 
-    const { data, error } = await query.order('createdAt', { ascending: false });
+    const { data, error } = await query;
     if (error) throw error;
     res.json(data || []);
   } catch (err: any) {

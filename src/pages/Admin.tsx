@@ -125,7 +125,6 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
         <nav className="space-y-1 flex-grow">
           <SidebarLink to="/admin" icon={<List size={17} />} label="Collections" />
           <SidebarLink to="/admin/add-collection" icon={<Plus size={17} />} label="New Artifact" />
-          <SidebarLink to="/admin/gallery" icon={<ImageIcon size={17} />} label="Visual Assets" />
         </nav>
 
         <button
@@ -143,7 +142,6 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
             <Route index element={<ManageCollections token={token} />} />
             <Route path="add-collection" element={<AddCollection token={token} />} />
             <Route path="edit-collection/:id" element={<EditCollection token={token} />} />
-            <Route path="gallery" element={<ManageGallery token={token} />} />
           </Routes>
         </div>
       </div>

@@ -43,7 +43,6 @@ export default function Footer() {
             <h4 className="text-white/60 text-[9px] uppercase tracking-[0.35em] mb-6 font-medium">Experience</h4>
             <ul className="space-y-3">
               <FooterLink to="/about">Our Legacy</FooterLink>
-              <FooterLink to="/gallery">Gallery</FooterLink>
               <FooterLink to="/contact">Concierge</FooterLink>
             </ul>
           </div>

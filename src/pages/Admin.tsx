@@ -110,10 +110,10 @@ function AdminDashboard({ token, onLogout }: { token: string; onLogout: () => vo
       <div className="flex-grow p-6 md:p-12 bg-brand-bg overflow-y-auto">
         <div className="max-w-5xl mx-auto">
           <Routes>
-            <Route path="/" element={<ManageCollections token={token} />} />
-            <Route path="/add-collection" element={<AddCollection token={token} />} />
-            <Route path="/edit-collection/:id" element={<EditCollection token={token} />} />
-            <Route path="/gallery" element={<ManageGallery token={token} />} />
+            <Route index element={<ManageCollections token={token} />} />
+            <Route path="add-collection" element={<AddCollection token={token} />} />
+            <Route path="edit-collection/:id" element={<EditCollection token={token} />} />
+            <Route path="gallery" element={<ManageGallery token={token} />} />
           </Routes>
         </div>
       </div>

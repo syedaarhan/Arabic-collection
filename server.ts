@@ -30,22 +30,41 @@ async function startServer() {
 
   app.use(express.json({ limit: '50mb' }));
 
-  // Admin Login
+  // Admin Login with Lazy Seeding
   app.post('/api/admin/login', async (req, res) => {
     const { username, password } = req.body;
 
-    const { data: admin, error } = await supabase
-      .from('admin')
-      .select('*')
-      .eq('username', username)
-      .single();
+    try {
+      // First, check if any admin exists. If not, seed immediately.
+      const { data: admins, error: countError } = await supabase.from('admin').select('id').limit(1);
 
-    if (error || !admin || !bcrypt.compareSync(password, admin.password)) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      if (countError && countError.message.includes('not found')) {
+        return res.status(500).json({ error: 'Database tables not found. Please run the SQL script in Supabase.' });
+      }
+
+      if (!admins || admins.length === 0) {
+        console.log('No admin found. Lazy seeding default account...');
+        const hashedPassword = bcrypt.hashSync('Arabic', 10);
+        await supabase.from('admin').insert([{ username: 'Arabic', password: hashedPassword }]);
+      }
+
+      // Now proceed with normal login
+      const { data: admin, error } = await supabase
+        .from('admin')
+        .select('*')
+        .eq('username', username)
+        .single();
+
+      if (error || !admin || !bcrypt.compareSync(password, admin.password)) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+
+      const token = jwt.sign({ id: admin.id, username: admin.username }, JWT_SECRET, { expiresIn: '1d' });
+      res.json({ token });
+    } catch (err: any) {
+      console.error('Login error:', err);
+      res.status(500).json({ error: 'Internal server error during authentication' });
     }
-
-    const token = jwt.sign({ id: admin.id, username: admin.username }, JWT_SECRET, { expiresIn: '1d' });
-    res.json({ token });
   });
 
   // Middleware to verify admin

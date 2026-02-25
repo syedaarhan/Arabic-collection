@@ -3,6 +3,41 @@ import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'moti
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 
+const FeaturedArtifacts = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/collections?featured=true')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setProducts(data.slice(0, 4));
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  if (loading) return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 opacity-50">
+      {[1, 2, 3, 4].map(i => <div key={i} className="aspect-[3/4] bg-brand-ink/5 animate-pulse rounded-sm" />)}
+    </div>
+  );
+
+  if (products.length === 0) return (
+    <div className="text-center py-20 border border-brand-gold/10 rounded-sm">
+      <p className="text-[10px] uppercase tracking-widest text-brand-muted/40">The vault is currently awaiting new arrivals</p>
+    </div>
+  );
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+      {products.map((item: any) => (
+        <ProductCard key={item.id} {...item} />
+      ))}
+    </div>
+  );
+};
+
 export default function Home() {
   const { scrollY } = useScroll();
 
@@ -246,6 +281,36 @@ export default function Home() {
             />
           </div>
         </motion.div>
+      </section>
+
+      {/* ── Featured Treasures (Dynamic) ── */}
+      <section className="py-28 px-4 bg-white/40">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <span className="text-[10px] uppercase tracking-[0.5em] text-brand-gold font-medium mb-4 block">Selected for You</span>
+            <h2 className="text-4xl md:text-6xl font-serif font-light text-brand-ink mb-5">
+              Featured <span className="italic text-brand-gold">Artifacts</span>
+            </h2>
+            <div className="w-10 h-px bg-brand-gold/40 mx-auto" />
+          </motion.div>
+
+          <FeaturedArtifacts />
+
+          <div className="text-center mt-20">
+            <Link
+              to="/collections"
+              className="text-[10px] uppercase tracking-[0.4em] text-brand-muted hover:text-brand-ink transition-colors group flex items-center justify-center gap-3"
+            >
+              <span>View All Treasures</span>
+              <div className="w-6 h-px bg-brand-gold group-hover:w-12 transition-all duration-500" />
+            </Link>
+          </div>
+        </div>
       </section>
 
       {/* ── Featured Categories ── */}

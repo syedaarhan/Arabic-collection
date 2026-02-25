@@ -126,7 +126,7 @@ app.get('/api/collections', async (req, res) => {
   const { category, featured } = req.query;
 
   try {
-    let query = supabase.from('collections').select('id, title, description, category, image, images, featured');
+    let query = supabase.from('collections').select('id, title, description, category, image, featured');
     if (category && category !== 'All') query = query.eq('category', category);
     if (featured === 'true') query = query.eq('featured', true);
 

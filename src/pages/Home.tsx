@@ -11,7 +11,7 @@ const FeaturedArtifacts = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/collections?featured=true')
+    fetch(`/api/collections?featured=true&t=${Date.now()}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setProducts(data.slice(0, 4));

@@ -10,6 +10,7 @@ export default function Collections() {
   const [collections, setCollections] = useState([]);
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
   const location = useLocation();
 
   useEffect(() => {
@@ -21,23 +22,22 @@ export default function Collections() {
   }, [location]);
 
   useEffect(() => {
+    setLoading(true);
     const url = activeCategory === 'All'
-      ? '/api/collections'
-      : `/api/collections?category=${activeCategory}`;
+      ? `/api/collections?t=${Date.now()}`
+      : `/api/collections?category=${activeCategory}&t=${Date.now()}`;
+
     fetch(url)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
           setCollections(data);
         } else {
-          console.error('Failed to fetch collections:', data.error);
           setCollections([]);
         }
       })
-      .catch((err) => {
-        console.error('Fetch error:', err);
-        setCollections([]);
-      });
+      .catch(() => setCollections([]))
+      .finally(() => setLoading(false));
   }, [activeCategory]);
 
   const filteredCollections = collections.filter((item: any) => {
@@ -102,13 +102,32 @@ export default function Collections() {
         </div>
 
         {/* Grid */}
-        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
-          <AnimatePresence mode="popLayout">
-            {filteredCollections.map((item: any) => (
-              <ProductCard key={item.id} {...item} />
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+              <div key={i} className="aspect-[3/4] bg-brand-ink/[0.03] animate-pulse rounded-sm relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 -translate-x-full animate-shimmer" />
+              </div>
             ))}
-          </AnimatePresence>
-        </motion.div>
+          </div>
+        ) : (
+          <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+            <AnimatePresence mode="popLayout">
+              {filteredCollections.map((item: any, idx: number) => (
+                <motion.div
+                  key={item.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.4, delay: idx * 0.05 }}
+                >
+                  <ProductCard {...item} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        )}
 
         {filteredCollections.length === 0 && (
           <div className="text-center py-32 glass-card">

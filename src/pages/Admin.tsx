@@ -273,17 +273,49 @@ function ItemForm({
   title: string;
   loading?: boolean;
 }) {
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
+  const handleMultiImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []) as File[];
+    if (files.length === 0) return;
+
+    // Filter out files that are too large
+    const validFiles = files.filter((file: File) => {
       if (file.size > 4 * 1024 * 1024) {
-        alert('Image is too large. Vercel limits uploads to 4MB. Please select a smaller image or compress it.');
-        return;
+        alert(`"${file.name}" is too large (>4MB) and will be skipped.`);
+        return false;
       }
+      return true;
+    });
+
+    const newImages: string[] = [...(formData.images || [])];
+    let loadedCount = 0;
+
+    validFiles.forEach(file => {
       const reader = new FileReader();
-      reader.onloadend = () => setFormData({ ...formData, image: reader.result as string });
+      reader.onloadend = () => {
+        newImages.push(reader.result as string);
+        loadedCount++;
+
+        if (loadedCount === validFiles.length) {
+          setFormData({
+            ...formData,
+            images: newImages,
+            // Automatically set the first image as the primary if none exists
+            image: formData.image || newImages[0]
+          });
+        }
+      };
       reader.readAsDataURL(file);
-    }
+    });
+  };
+
+  const removeImage = (index: number) => {
+    const updatedImages = formData.images.filter((_: any, i: number) => i !== index);
+    setFormData({
+      ...formData,
+      images: updatedImages,
+      // If we removed the primary image, pick the next one or clear it
+      image: (updatedImages.length > 0) ? updatedImages[0] : ''
+    });
   };
 
   const inputCls = "w-full bg-white border border-black/10 rounded-sm p-3.5 text-sm text-brand-ink focus:ring-2 focus:ring-brand-gold/20 focus:border-brand-gold/50 outline-none transition-all";
@@ -309,15 +341,35 @@ function ItemForm({
           </div>
         </div>
         <div>
-          <label className={labelCls}>Product Image</label>
-          <div className="relative group overflow-hidden border border-black/10 bg-white rounded-sm h-[140px] flex flex-col items-center justify-center transition-all hover:border-brand-gold/40 cursor-pointer">
-            <input type="file" accept="image/*" onChange={handleImageUpload} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
-            {formData.image ? (
-              <img src={formData.image} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-70" />
-            ) : (
-              <ImageIcon size={22} className="text-brand-muted/30 mb-2" />
-            )}
-            <span className="text-[10px] uppercase tracking-widest text-brand-muted/50 relative z-0">{formData.image ? 'Change Image' : 'Upload Image'}</span>
+          <label className={labelCls}>Artifact Gallery (Main Photo = First image)</label>
+          <div className="space-y-4">
+            {/* Upload Area */}
+            <div className="relative group overflow-hidden border border-dashed border-black/20 bg-black/5 rounded-sm h-[80px] flex flex-col items-center justify-center transition-all hover:border-brand-gold/40 cursor-pointer">
+              <input type="file" accept="image/*" multiple onChange={handleMultiImageUpload} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
+              <div className="flex items-center gap-2 text-brand-muted/50">
+                <Plus size={18} />
+                <span className="text-[10px] uppercase tracking-widest">Add Images</span>
+              </div>
+            </div>
+
+            {/* Preview Grid */}
+            <div className="grid grid-cols-4 gap-2">
+              {formData.images?.map((img: string, idx: number) => (
+                <div key={idx} className="relative group aspect-square border border-black/5 overflow-hidden rounded-sm bg-white">
+                  <img src={img} className="w-full h-full object-cover" alt={`Preview ${idx}`} />
+                  {idx === 0 && (
+                    <div className="absolute top-0 left-0 bg-brand-gold text-[6px] text-black px-1 py-0.5 rounded-br-sm uppercase font-bold tracking-tighter">Main</div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeImage(idx)}
+                    className="absolute inset-0 bg-red-500/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -351,7 +403,7 @@ function ItemForm({
 
 function AddCollection({ token }: { token: string }) {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ title: '', description: '', category: 'Clothes', image: '', featured: false });
+  const [formData, setFormData] = useState({ title: '', description: '', category: 'Clothes', image: '', images: [], featured: false });
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -400,7 +452,7 @@ function AddCollection({ token }: { token: string }) {
 function EditCollection({ token }: { token: string }) {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [formData, setFormData] = useState({ title: '', description: '', category: 'Clothes', image: '', featured: false });
+  const [formData, setFormData] = useState({ title: '', description: '', category: 'Clothes', image: '', images: [], featured: false });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -411,6 +463,7 @@ function EditCollection({ token }: { token: string }) {
         description: data.description,
         category: data.category,
         image: data.image,
+        images: data.images || [],
         featured: !!data.featured
       }));
   }, [id]);

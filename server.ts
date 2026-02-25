@@ -126,7 +126,7 @@ app.get('/api/collections', async (req, res) => {
   const { category, featured } = req.query;
 
   try {
-    let query = supabase.from('collections').select('id, title, description, category, image, featured');
+    let query = supabase.from('collections').select('id, title, description, category, image, images, featured');
     if (category && category !== 'All') query = query.eq('category', category);
     if (featured === 'true') query = query.eq('featured', true);
 
@@ -147,7 +147,7 @@ app.get('/api/collections/:id', async (req, res) => {
 
 app.post('/api/add-collection', verifyAdmin, async (req, res) => {
   if (!supabase) return res.status(500).json({ error: 'Database not configured' });
-  const { title, description, category, image, featured } = req.body;
+  const { title, description, category, image, images, featured, availabilityStatus } = req.body;
 
   try {
     const payload: any = {
@@ -155,6 +155,7 @@ app.post('/api/add-collection', verifyAdmin, async (req, res) => {
       description,
       category,
       image,
+      images: images || [],
       featured: !!featured
     };
 
@@ -183,7 +184,7 @@ app.post('/api/add-collection', verifyAdmin, async (req, res) => {
 
 app.put('/api/update-collection/:id', verifyAdmin, async (req, res) => {
   if (!supabase) return res.status(500).json({ error: 'Database not configured' });
-  const { title, description, category, image, featured, availabilityStatus } = req.body;
+  const { title, description, category, image, images, featured, availabilityStatus } = req.body;
 
   try {
     const payload: any = {
@@ -191,6 +192,7 @@ app.put('/api/update-collection/:id', verifyAdmin, async (req, res) => {
       description,
       category,
       image,
+      images: images || [],
       featured: !!featured
     };
 

@@ -24,6 +24,21 @@
 
   <link rel="icon" type="image/png" href="/assets/logo.png" sizes="32x32" />
   <link rel="apple-touch-icon" href="/assets/logo.png" />
+  <script>
+    // This script actively unregisters any old service workers
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        for (let registration of registrations) {
+          registration.unregister();
+          console.log('Service Worker unregistered');
+        }
+      });
+    }
+
+    // Clear any local PWA flags if they exist
+    localStorage.removeItem('pwaInstalled');
+    localStorage.removeItem('installPromptShown');
+  </script>
 </head>
 
 <body>

@@ -1,0 +1,181 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", ui-serif, Georgia, serif;
+
+  /* ── Light Luxury Palette ── */
+  --color-brand-bg: #faf8f4;
+  --color-brand-card: rgba(255, 255, 255, 0.82);
+  --color-brand-ink: #1c1917;
+  --color-brand-muted: #6b6159;
+  --color-brand-accent: #9a7d3a;
+  --color-brand-gold: #b8922a;
+  --color-brand-gold-light: #d4af60;
+  --color-brand-border: rgba(0, 0, 0, 0.07);
+  --color-brand-glass-border: rgba(184, 146, 42, 0.15);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Promote to composited layer for smooth scrolling */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-brand-bg);
+    color: var(--color-brand-ink);
+    @apply antialiased selection:bg-brand-gold/20 selection:text-brand-ink;
+    /* Prevent subpixel rendering jank */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-serif);
+  }
+
+  /* Composited image rendering */
+  img {
+    content-visibility: auto;
+  }
+}
+
+@layer utilities {
+
+  /* ── Floating navbar glass (rich, frosted) ── */
+  .glass-navbar {
+    background: rgba(250, 248, 244, 0.82);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(184, 146, 42, 0.14);
+    box-shadow:
+      0 4px 30px rgba(0, 0, 0, 0.07),
+      0 1px 0 rgba(255, 255, 255, 0.6) inset;
+  }
+
+  /* ── Hero card glass (prominent, layered) ── */
+  .glass-hero {
+    background: linear-gradient(145deg,
+        rgba(255, 255, 255, 0.72) 0%,
+        rgba(250, 248, 244, 0.60) 100%);
+    backdrop-filter: blur(32px) saturate(160%);
+    -webkit-backdrop-filter: blur(32px) saturate(160%);
+    border: 1px solid rgba(184, 146, 42, 0.18);
+    border-top: 1px solid rgba(255, 255, 255, 0.7);
+    border-left: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow:
+      0 8px 60px rgba(0, 0, 0, 0.10),
+      0 2px 8px rgba(0, 0, 0, 0.06),
+      0 1px 0 rgba(255, 255, 255, 0.8) inset;
+    will-change: transform;
+  }
+
+  /* ── Standard glass card ── */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.80);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.05),
+      0 1px 0 rgba(255, 255, 255, 0.9) inset;
+  }
+
+  /* ── Deep glass (modals, overlays) ── */
+  .glass-morph {
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.88) 0%,
+        rgba(255, 255, 255, 0.68) 100%);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(184, 146, 42, 0.14);
+    border-top: 1px solid rgba(255, 255, 255, 0.75);
+    box-shadow:
+      0 10px 50px rgba(0, 0, 0, 0.08),
+      0 1px 0 rgba(255, 255, 255, 0.85) inset;
+  }
+
+  /* ── Section glass band ── */
+  .glass-band {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(255, 255, 255, 0.7);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 20px rgba(184, 146, 42, 0.22);
+  }
+
+  .gold-border {
+    border: 1px solid rgba(184, 146, 42, 0.22);
+  }
+
+  .shadow-luxury {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.09), 0 4px 16px rgba(0, 0, 0, 0.05);
+  }
+
+  /* GPU acceleration for animated elements */
+  .gpu {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-18px);
+    }
+
+    100% {
+      transform: translateY(0px);
+    }
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-brand-bg);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(184, 146, 42, 0.28);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(184, 146, 42, 0.5);
+  }
+
+  /* No-scrollbar */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

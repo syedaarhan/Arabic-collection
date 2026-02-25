@@ -6,21 +6,35 @@ import { motion, AnimatePresence } from 'motion/react';
 function AdminLogin({ setToken }: { setToken: (t: string) => void }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch('/api/admin/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      localStorage.setItem('adminToken', data.token);
-      setToken(data.token);
-    } else {
-      setError(data.error);
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await res.json();
+      console.log('Login Response:', res.status, data);
+
+      if (res.ok) {
+        localStorage.setItem('adminToken', data.token);
+        setToken(data.token);
+      } else {
+        setError(data.error || 'Authentication failed. Please check your credentials.');
+      }
+    } catch (err) {
+      console.error('Login Fetch Error:', err);
+      setError('Connection failed. Please ensure the server is responding.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -72,9 +86,15 @@ function AdminLogin({ setToken }: { setToken: (t: string) => void }) {
           </div>
           <button
             type="submit"
-            className="w-full bg-brand-ink text-white py-4 font-medium uppercase tracking-[0.2em] text-[10px] hover:bg-brand-gold transition-all duration-300 active:scale-[0.98] rounded-sm"
+            disabled={loading}
+            className={`w-full bg-brand-ink text-white py-4 font-medium uppercase tracking-[0.2em] text-[10px] hover:bg-brand-gold transition-all duration-300 active:scale-[0.98] rounded-sm flex items-center justify-center gap-2 ${loading ? 'opacity-70 cursor-wait' : ''}`}
           >
-            Authorize Entry
+            {loading ? (
+              <>
+                <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>Authorizing...</span>
+              </>
+            ) : 'Authorize Entry'}
           </button>
         </form>
       </motion.div>
